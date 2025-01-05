@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# e.g., ./script/init abc385 a
+contest_id=$1 # abc385
+task_id=$2 # a
+
+uv run oj test \
+  --command "uv run contest/atcoder/${contest_id}/${task_id}/main.py" \
+  --directory contest/atcoder/${contest_id}/${task_id}/tests

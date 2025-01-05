@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# Example:
+#   `./start abc345`
+#
+
+set -euo pipefail
+
+# ===============================================
+# Setup
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+npm run acc -- config oj-path $SCRIPT_DIR/../.venv/bin/oj
+
+
+# ===============================================
+# Initialize
+
+contest_name=${1}
+contest_path="contest/atcoder/${contest_name}"
+contest_info="${contest_path}/contest.acc.json"
+
+
+# ===============================================
+# Download contest data
+
+npm run acc -- new $contest_name \
+  --choice all \
+  --contest-dirname-format $contest_path
+
+# Check if the contest date is downloaded successfully
+return_code=$?
+if [[ $return_code -ne 0 ]]; then
+  echo "[ERROR] Failed to download contest data for ${contest_name}."
+  exit 1
+fi
+
+# Check if contest.acc.json (the contest metadata) exists
+if [ -e $contest_info ]; then
+  :
+else
+  echo "[ERROR] contest.acc.json does not exist"
+  exit 1
+fi
+
+
+# ===============================================
+# Get the number of tasks
+
+num_of_tasks=$(cat $contest_info | jq -r '.tasks | length')
+
+# Check if the number of tasks is not too large
+max_num_of_tasks_open_in_browser=10
+echo "[INFO ] $num_of_tasks tasks downloaded."
+if [[ $num_of_tasks -gt $max_num_of_tasks_open_in_browser ]]; then
+  echo "[INFO ] Too many tasks to open all tasks in your browser."
+  exit
+fi
+
+
+# ===============================================
+# Open the all task URLs in your default browser
+cat $contest_info | jq -r '.tasks | reverse | .[].url' | xargs -I{} open {}
+
+
+# ===============================================
+# Open main.py for each task in neovim tab
+nvim -p $(cat $contest_info \
+  | jq -r '.tasks[].directory.path' \
+  | xargs -I{task_id} echo ${contest_path}/{task_id}/main.py)
+
+
+# ===============================================
+# Post-process
+
+# config.json の oj-path は絶対パスで指定されているため、
+# 実行時に動的に指定するようにし、実行後に削除する。
+# これにより、他の環境でも動作するようになる。
+CONFIG_FILE="$SCRIPT_DIR/../.config/acc/atcoder-cli-nodejs/config.json"
+jq 'del(."oj-path")' $CONFIG_FILE > $CONFIG_FILE.tmp
+mv $CONFIG_FILE.tmp $CONFIG_FILE
+

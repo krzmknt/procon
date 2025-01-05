@@ -1,0 +1,16 @@
+{
+  "name": "procon",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "acc": "node node_modules/atcoder-cli/bin/index.js"
+  },
+  "author": "Kanta Kurazumi",
+  "dependencies": {
+    "atcoder-cli": "^2.2.0"
+  }
+}

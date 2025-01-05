@@ -1,4 +1,8 @@
 #!/bin/bash
 
+mise i
+npm ci
+uv sync
+
 THIS_PATH=$(dirname "$(readlink -f "$0")")
 ln -s $THIS_PATH/.config/acc/atcoder-cli-nodejs ~/Library/Preferences/

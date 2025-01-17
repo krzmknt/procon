@@ -7,15 +7,19 @@ contest_id=$1 # abc385
 task_id=$2 # a
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
+# Test with sample test cases before submitting
 $SCRIPT_DIR/test $contest_id $task_id
 
+# Temporary configure the oj-path
 npm run acc -- config oj-path $SCRIPT_DIR/../.venv/bin/oj
 
+# Submit
 npm run acc -- submit contest/atcoder/${contest_id}/${task_id}/main.py \
-  --contest abc385 \
-  --task abc385_a \
+  --contest ${contest_id} \
+  --task ${contest_id}_${task_id} \
   -- --open --yes --guess-python-interpreter cpython --language 5055
 
+# Restore the original configuration
 CONFIG_FILE="$SCRIPT_DIR/../.config/acc/atcoder-cli-nodejs/config.json"
 jq 'del(."oj-path")' $CONFIG_FILE > $CONFIG_FILE.tmp
 mv $CONFIG_FILE.tmp $CONFIG_FILE
